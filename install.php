@@ -179,7 +179,7 @@ $pass = \'' . $data['pass'] . '\';
 if (array_key_exists('host', $_POST)) {
 	install::setDB($_POST);
 } elseif (array_key_exists('copy', $_POST)) {
-	install::copyDB('solar.sql');
+	install::copyDB('helper/solar.sql');
 } else {
 	install::init();
 }
@@ -259,11 +259,11 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
 			</p>
 			<i>data.sh</i>
 			<pre class="bg-dark p-3" style="border-radius: 0.25rem"><kbd
-						class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('data.sh'))) ?></kbd></pre>
+						class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('helper/data.sh'))) ?></kbd></pre>
 			<br>
 			<i>data.bat</i><br>
 			<pre class="bg-dark p-3" style="border-radius: 0.25rem"><kbd
-						class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('data.sh'))) ?></kbd></pre>
+						class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('helper/data.sh'))) ?></kbd></pre>
 			<p>
 				Dabei werden die JSON-Daten aus der openDTU zwischengespeichert und anschließend via POST an die <code>import.php</code>
 				gesendet.
