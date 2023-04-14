@@ -305,5 +305,8 @@ $max = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group
 
     update();
 </script>
+<section class="text-center">
+	<a href="https://github.com/FFW-Scripter/Solarlogger" target="_blank">https://github.com/FFW-Scripter/Solarlogger</a>
+</section>
 </body>
 </html>

@@ -111,5 +111,8 @@ foreach ($max_inverter as $m) {
         });
     }, 5000);
 </script>
+<section class="text-center">
+	<a href="https://github.com/FFW-Scripter/Solarlogger" target="_blank">https://github.com/FFW-Scripter/Solarlogger</a>
+</section>
 </body>
 </html>
