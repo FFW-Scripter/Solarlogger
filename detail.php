@@ -47,13 +47,14 @@ $date_max = $minmax['max'];
 <body>
 <section class="container mt-3">
 	<div class="row">
-		<div class="col-9">
+		<div class="col-6">
 			<a href="./" class="btn btn-primary"><i class="fa fa-arrow-left"></i> zur Übersicht</a>
 		</div>
-		<div class="col-3">
-			<div class="input-group">
+		<div class="col-6">
+			<div class="input-group float-end" style="max-width: 300px">
 				<div class="input-group-prepend">
-					<label for="date" class="input-group-text" style="border-top-right-radius: 0;border-bottom-right-radius: 0;">Datum:</label>
+					<label for="date" class="input-group-text"
+					       style="border-top-right-radius: 0;border-bottom-right-radius: 0;">Datum:</label>
 				</div>
 				<input id="date" type="date" class="form-control" value="<?= $date ?>" min="<?= $date_min ?>"
 				       max="<?= $date_max ?>">
