@@ -12,6 +12,13 @@ foreach ($max_inverter as $m) {
 	$max[$m['serial']] = intval($m['max']);
 }
 
+if (array_key_exists('date', $_GET)) {
+	$time = strtotime($_GET['date']);
+} else {
+	$time = time();
+}
+$date = date('Y-m-d', $time);
+
 $detail = array();
 $total = array();
 if (array_key_exists('inv', $_GET)) {
@@ -27,7 +34,7 @@ if (array_key_exists('inv', $_GET)) {
 from inverter__data
 where power > 0 
   and serial = ' . $PDO->quote($_GET['inv']) . '
-  and date_format(timestamp, \'%Y-%m-%d\') = curdate()
+  and date_format(timestamp, \'%Y-%m-%d\') = ' . $PDO->quote($date) . '
 group by ts');
 
 	$detail['labels'] = array();

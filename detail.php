@@ -7,6 +7,16 @@ require_once 'DB.php';
 $inv = $_GET['inv'];
 $inverter = $PDO->query('Select * from inverter where serial = ' . $PDO->quote($inv))->fetch();
 $max = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group by serial')->fetch();
+
+$minmax = $PDO->query('Select date_format(min(timestamp),\'%Y-%m-%d\') as min, date_format(max(timestamp),\'%Y-%m-%d\') as max from inverter__data where serial=' . $PDO->quote($inv))->fetch();
+if (array_key_exists('date', $_GET)) {
+	$time = strtotime($_GET['date']);
+} else {
+	$time = time();
+}
+$date = date('Y-m-d', $time);
+$date_min = $minmax['min'];
+$date_max = $minmax['max'];
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -36,7 +46,20 @@ $max = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group
 </head>
 <body>
 <section class="container mt-3">
-	<a href="./" class="btn btn-primary"><i class="fa fa-arrow-left"></i> zur Übersicht</a>
+	<div class="row">
+		<div class="col-9">
+			<a href="./" class="btn btn-primary"><i class="fa fa-arrow-left"></i> zur Übersicht</a>
+		</div>
+		<div class="col-3">
+			<div class="input-group">
+				<div class="input-group-prepend">
+					<label for="date" class="input-group-text" style="border-top-right-radius: 0;border-bottom-right-radius: 0;">Datum:</label>
+				</div>
+				<input id="date" type="date" class="form-control" value="<?= $date ?>" min="<?= $date_min ?>"
+				       max="<?= $date_max ?>">
+			</div>
+		</div>
+	</div>
 </section>
 <section class="container mt-3" id="inv_<?= $inverter['serial'] ?>">
 	<h2>
@@ -123,6 +146,7 @@ $max = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group
 <script src="node_modules/chart.js/dist/chart.umd.js"></script>
 <script>
     let data = <?=json_encode($inverter)?>;
+    let date = '<?=$date?>';
     let sections = {};
     sections[data.serial] = $('#inv_' + data.serial);
     let colors = ['#d9534f', '#428bca', '#5cb85c', '#7e4710', '#5bc0de', '#333333'];
@@ -245,7 +269,7 @@ $max = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group
     );
 
     function update() {
-        $.getJSON('data.php?inv=' + data.serial, function (res) {
+        $.getJSON('data.php?inv=' + data.serial + '&date=' + date, function (res) {
             for (let i in res.inverter) {
                 if (res.inverter.hasOwnProperty(i)) {
                     let inv = res.inverter[i];
@@ -303,10 +327,16 @@ $max = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group
         update();
     }, 5000);
 
+    $('#date').on('change', function () {
+        date = $(this).val();
+        update();
+    });
+
     update();
 </script>
 <section class="text-center">
-	<a href="https://github.com/FFW-Scripter/Solarlogger" target="_blank">https://github.com/FFW-Scripter/Solarlogger</a>
+	<a href="https://github.com/FFW-Scripter/Solarlogger"
+	   target="_blank">https://github.com/FFW-Scripter/Solarlogger</a>
 </section>
 </body>
 </html>
