@@ -5,19 +5,20 @@ header('Content-Type: application/json;charset=utf-8');
 /** @var \PDO $PDO */
 require_once 'DB.php';
 
-$inverter = $PDO->query('Select * from inverter order by name')->fetchAll();
-$max_inverter = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` group by serial')->fetchAll();
-$max = array();
-foreach ($max_inverter as $m) {
-	$max[$m['serial']] = intval($m['max']);
-}
-
 if (array_key_exists('date', $_GET)) {
 	$time = strtotime($_GET['date']);
 } else {
 	$time = time();
 }
 $date = date('Y-m-d', $time);
+
+$inverter = $PDO->query('Select * from inverter order by name')->fetchAll();
+$max_inverter = $PDO->query('SELECT serial, max(power) as max FROM `inverter__data` where date_format(timestamp, \'%Y-%m-%d\') = ' . $PDO->quote($date) . ' group by serial')->fetchAll();
+$max = array();
+foreach ($max_inverter as $m) {
+	$max[$m['serial']] = intval($m['max']);
+}
+
 
 $detail = array();
 $total = array();
