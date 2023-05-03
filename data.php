@@ -73,7 +73,7 @@ group by ts');
 	}
 
 	$total_raw = $PDO->query('Select 
-       date_format(timestamp, \'%d.%m.%Y\') as date,
+       date_format(timestamp, \'%Y-%m-%d\') as date,
        max(yieldday)                      as yieldday
 from inverter__data
 where serial = ' . $PDO->quote($_GET['inv']) . '
