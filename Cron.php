@@ -7,7 +7,7 @@ class Cron
 	/**
 	 * @var float|int
 	 **/
-	// */5 * * * * php /var/www/…/Cron.php
+	// */5 * * * * cd /var/www/solar; && php Cron.php
 	private $Runtime = 5 * 60;//in Minuten
 
 	/**
