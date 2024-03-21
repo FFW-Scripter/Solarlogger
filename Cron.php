@@ -93,7 +93,7 @@ class Cron
 	public function __construct()
 	{
 		$this->startTime = time();
-		ini_set('max_execution_time', $this->Runtime - 1);
+		ini_set('max_execution_time', $this->Runtime);
 
 		$this->connectDB();
 		$this->MQTT = new Bluerhinos\phpMQTT($this->Host, $this->Port, $this->ClientID);
@@ -211,10 +211,8 @@ class Cron
 	 */
 	private function subscribe(string $Topic)
 	{
-		$topics[$Topic] = array('qos' => 0, 'function' => 'Cron::procMsg');
-		$this->MQTT->subscribe($topics, 0);
-
-		while (time() - $this->startTime < $this->Runtime) {
+		$this->MQTT->subscribe(array($Topic => array('qos' => 0, 'function' => 'Cron::procMsg')));
+		while (time() - $this->startTime < $this->Runtime - 1) {
 			$this->MQTT->proc();
 		}
 	}
