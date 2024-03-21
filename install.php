@@ -4,6 +4,11 @@ ob_start('ob_gzhandler');
 error_reporting(E_ALL);
 ini_set('display_errors', true);
 
+if (file_exists('DB_data.php')) {
+	echo 'Die Installation wurde schon ausgeführt! - Losche die Datei "DB_data.php" um die INstallation erneut zu starten.';
+	exit;
+}
+
 class install
 {
 	/**
