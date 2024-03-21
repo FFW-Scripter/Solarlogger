@@ -290,7 +290,7 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
                 <input id="mqtt_pass" type="password" class="form-control">
             </div>
             <button class="btn btn-primary btn-lg" id="checkMQTT">MQTT Verbindung testen</button>
-            <pre id="meldung" class="mt-3 text-muted"></pre>
+            <pre id="mqtt_meldung" class="mt-3 text-muted"></pre>
         </div>
     </div>
 </section>
@@ -389,7 +389,7 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
         }
         $.post('install.php', data, function (res) {
             me.prop('disabled', false);
-            $('#meldung').text(res);
+            $('#mqtt_meldung').text(res);
             me.removeClass('btn-primary btn-success btn-danger');
             if (res.indexOf('Verbindung OK') !== -1) {
                 me.addClass('btn-success');
