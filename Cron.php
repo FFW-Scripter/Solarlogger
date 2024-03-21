@@ -63,7 +63,7 @@ class Cron
 	/**
 	 * @var string
 	 */
-	private $ClientID = 'SolarLogger';
+	private $ClientID;
 
 	/**
 	 * @var string
@@ -78,7 +78,7 @@ class Cron
 	/**
 	 * @var string
 	 */
-	private $Topic = 'solar_rene/#';
+	private $Topic = 'solar/#';
 
 	/**
 	 * @var \Bluerhinos\phpMQTT
@@ -90,6 +90,9 @@ class Cron
 	 */
 	private $startTime;
 
+	/**
+	 *
+	 */
 	public function __construct()
 	{
 		$this->startTime = time();
@@ -102,7 +105,8 @@ class Cron
 			$this->MQTT->debug = false;
 
 			if (!$this->MQTT->connect(true, NULL, $this->User, $this->Password)) {
-				exit(1);
+				echo 'Konnte nicht zu Broker Verbinden!';
+				exit;
 			}
 			$this->subscribe($this->Topic);
 		} else {
