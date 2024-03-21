@@ -157,6 +157,37 @@ $pass = \'' . $data['pass'] . '\';
 		exit;
 	}
 
+	public static function setMQTT(array $data)
+	{
+		if (!strlen($data['mqtt_host'])) {
+			echo 'Keinen Broker angegeben!';
+		} else {
+			foreach ($data as $k => $v) {
+				$data[$k] = str_replace("'", "\'", $v);
+			}
+
+			$config = '<?php
+$Host = \'' . $data['mqtt_host'] . '\';
+$Port = \'' . $data['mqtt_port'] . '\';
+$User = \'' . $data['mqtt_user'] . '\';
+$Password = \'' . $data['mqtt_pass'] . '\';
+';
+
+			if (file_put_contents('MQTT_data.php', $config)) {
+				require_once 'phpMQTT/phpMQTT.php';
+				$MQTT = new Bluerhinos\phpMQTT($data['mqtt_host'], $data['mqtt_port'], 'SolarLogger');
+				if ($MQTT->connect(true, NULL, $data['mqtt_user'], $data['mqtt_pass'])) {
+					echo 'Verbindung OK und Config gespeichert!';
+				} else {
+					unlink('MQTT_data.php');
+				}
+			} else {
+				echo 'Keine Schreibrechte!';
+			}
+		}
+		exit;
+	}
+
 	/**
 	 * @param $sql
 	 */
@@ -178,6 +209,8 @@ $pass = \'' . $data['pass'] . '\';
 
 if (array_key_exists('host', $_POST)) {
 	install::setDB($_POST);
+} elseif (array_key_exists('mqtt_host', $_POST)) {
+	install::setMQTT($_POST);
 } elseif (array_key_exists('copy', $_POST)) {
 	install::copyDB('helper/solar.sql');
 } else {
@@ -189,100 +222,121 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
 <!DOCTYPE html>
 <html lang="de">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-	<meta name="mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="msapplication-starturl" content="/">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="msapplication-starturl" content="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-	<link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
-	<link rel="manifest" href="./favicon/site.webmanifest">
-	<link rel="mask-icon" href="./favicon/safari-pinned-tab.svg" color="#77b433">
-	<link rel="shortcut icon" href="./favicon/favicon.ico">
-	<meta name="msapplication-TileColor" content="#77b433">
-	<meta name="msapplication-config" content="./favicon/browserconfig.xml">
-	<meta name="theme-color" content="#77b433">
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon/favicon-16x16.png">
+    <link rel="manifest" href="./favicon/site.webmanifest">
+    <link rel="mask-icon" href="./favicon/safari-pinned-tab.svg" color="#77b433">
+    <link rel="shortcut icon" href="./favicon/favicon.ico">
+    <meta name="msapplication-TileColor" content="#77b433">
+    <meta name="msapplication-config" content="./favicon/browserconfig.xml">
+    <meta name="theme-color" content="#77b433">
 
-	<title>Solarlogger</title>
-	<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
-	<link rel="stylesheet" type="text/css" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+    <title>Solarlogger</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap-reboot.min.css">
+    <link rel="stylesheet" type="text/css" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css">
 </head>
 <body>
 <section class="container">
-	<h1>Installer</h1>
-	<div class="row">
-		<div class="col-12 alert alert-secondary" id="MySQL">
-			<h3>Datenbank:</h3>
-			<div class="input-group mb-3">
-				<label for="host" class="input-group-text">Host</label>
-				<input id="host" type="text" class="form-control" placeholder="localhost" value="localhost">
-			</div>
-			<div class="input-group mb-3">
-				<label for="dbname" class="input-group-text">Datenbankname</label>
-				<input id="dbname" type="text" class="form-control">
-			</div>
-			<div class="input-group mb-3">
-				<label for="user" class="input-group-text">User</label>
-				<input id="user" type="text" class="form-control">
-			</div>
-			<div class="input-group mb-3">
-				<label for="pass" class="input-group-text">Passwort</label>
-				<input id="pass" type="password" class="form-control">
-			</div>
-			<button class="btn btn-primary btn-lg" id="checkMySQL">MySQL Verbindung testen</button>
-			<button class="ml-3 btn btn-primary btn-lg" id="copyDB" disabled="disabled">Datenbank einrichten</button>
-			<pre id="meldung" class="mt-3 text-muted"></pre>
-		</div>
-	</div>
+    <h1>Installer</h1>
+    <div class="row">
+        <div class="col-12 alert alert-secondary" id="MySQL">
+            <h3>Datenbank:</h3>
+            <div class="input-group mb-3">
+                <label for="host" class="input-group-text">Host</label>
+                <input id="host" type="text" class="form-control" placeholder="localhost" value="localhost">
+            </div>
+            <div class="input-group mb-3">
+                <label for="dbname" class="input-group-text">Datenbankname</label>
+                <input id="dbname" type="text" class="form-control">
+            </div>
+            <div class="input-group mb-3">
+                <label for="user" class="input-group-text">User</label>
+                <input id="user" type="text" class="form-control">
+            </div>
+            <div class="input-group mb-3">
+                <label for="pass" class="input-group-text">Passwort</label>
+                <input id="pass" type="password" class="form-control">
+            </div>
+            <button class="btn btn-primary btn-lg" id="checkMySQL">MySQL Verbindung testen</button>
+            <button class="ml-3 btn btn-primary btn-lg" id="copyDB" disabled="disabled">Datenbank einrichten</button>
+            <pre id="meldung" class="mt-3 text-muted"></pre>
+        </div>
+        <div class="col-12 alert alert-secondary" id="MQTT">
+            <h3>MQTT:</h3>
+            <div class="input-group mb-3">
+                <label for="mqtt_host" class="input-group-text">Broker</label>
+                <input id="mqtt_host" type="text" class="form-control" placeholder="localhost" value="localhost">
+            </div>
+            <div class="input-group mb-3">
+                <label for="mqtt_port" class="input-group-text">Port</label>
+                <input id="mqtt_port" type="text" class="form-control" placeholder="1883" value="1883">
+            </div>
+            <div class="input-group mb-3">
+                <label for="mqtt_user" class="input-group-text">User</label>
+                <input id="mqtt_user" type="text" class="form-control">
+            </div>
+            <div class="input-group mb-3">
+                <label for="mqtt_pass" class="input-group-text">Passwort</label>
+                <input id="mqtt_pass" type="password" class="form-control">
+            </div>
+            <button class="btn btn-primary btn-lg" id="checkMQTT">MQTT Verbindung testen</button>
+            <pre id="meldung" class="mt-3 text-muted"></pre>
+        </div>
+    </div>
 </section>
 <section id="info" class="container">
-	<div class="row">
-		<div class="col-12 alert alert-secondary">
-			<h2 class="text-success mb-5">Super, die Installation ist abgeschlossen :-)</h2>
-			<h3 class="mb-3">Wie geht es jetzt weiter?</h3>
-			<p>Die Daten aus der <a href="https://github.com/tbnobody/OpenDTU" target="_blank">openDTU</a> müssen jetzt
-				in die Datenbank. Dafür gibt es die <code>import.php</code>.<br>
-				Die erste Möglichkeit ist es, die <code>import.php</code> mit dem GET Parameter ip=[DTU-IP]
-				aufzurufen:<br><br>
-				<kbd>
+    <div class="row">
+        <div class="col-12 alert alert-secondary">
+            <h2 class="text-success mb-5">Super, die Installation ist abgeschlossen :-)</h2>
+            <h3 class="mb-3">Wie geht es jetzt weiter?</h3>
+            <p>Die Daten aus der <a href="https://github.com/tbnobody/OpenDTU" target="_blank">openDTU</a> müssen jetzt
+                in die Datenbank. Dafür gibt es die <code>import.php</code>.<br>
+                Die erste Möglichkeit ist es, die <code>import.php</code> mit dem GET Parameter ip=[DTU-IP]
+                aufzurufen:<br><br>
+                <kbd>
 					<?= $importURL ?>?ip=192.168.x.x
-				</kbd>
-			</p>
-			<p>
-				Die zweite Möglichkeit ist, auf einem Server innerhalb des Netzwerkes ein kleines Shell-/Batch-Script
-				laufen zu lassen.<br>
-			</p>
-			<i>data.sh</i>
-			<pre class="bg-dark p-3" style="border-radius: 0.25rem"><kbd
-						class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('helper/data.sh'))) ?></kbd></pre>
-			<br>
-			<i>data.bat</i><br>
-			<pre class="bg-dark p-3" style="border-radius: 0.25rem"><kbd
-						class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('helper/data.sh'))) ?></kbd></pre>
-			<p>
-				Dabei werden die JSON-Daten aus der openDTU zwischengespeichert und anschließend via POST an die <code>import.php</code>
-				gesendet.
-			</p>
-			<p>
-				<i>Übrigens:</i><br>
-				Die Namen der Inverter/Strings werden aus der openDTU übernommen und auch in den Charts verwendet.<br>
-				Es können auch mehrere openDTUs in die gleiche Datenbank eingespielt werden.
-			</p>
-			<p>
-				<b>Zum Schluss:</b><br>
-				Lösche dieses Script <code>install.php</code> zur Sicherheit bitte aus dem Hauptverzeichniss.<br>
-				Die Installation ist damit abgeschlossen, hier geht es zur Hauptseite:<br>
-			</p>
-			<div class="text-center">
-				<a href="./" class="btn btn-success btn-lg">zur Hauptseite</a>
-			</div>
-		</div>
-	</div>
+                </kbd>
+            </p>
+            <p>
+                Die zweite Möglichkeit ist, auf einem Server innerhalb des Netzwerkes ein kleines Shell-/Batch-Script
+                laufen zu lassen.<br>
+            </p>
+            <i>data.sh</i>
+            <pre class="bg-dark p-3" style="border-radius: 0.25rem"><kbd
+                        class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('helper/data.sh'))) ?></kbd></pre>
+            <br>
+            <i>data.bat</i><br>
+            <pre class="bg-dark p-3" style="border-radius: 0.25rem"><kbd
+                        class="p-0"><?= trim(str_replace('[importURL]', $importURL, file_get_contents('helper/data.sh'))) ?></kbd></pre>
+            <p>
+                Dabei werden die JSON-Daten aus der openDTU zwischengespeichert und anschließend via POST an die <code>import.php</code>
+                gesendet.
+            </p>
+            <p>
+                <i>Übrigens:</i><br>
+                Die Namen der Inverter/Strings werden aus der openDTU übernommen und auch in den Charts verwendet.<br>
+                Es können auch mehrere openDTUs in die gleiche Datenbank eingespielt werden.
+            </p>
+            <p>
+                <b>Zum Schluss:</b><br>
+                Lösche dieses Script <code>install.php</code> zur Sicherheit bitte aus dem Hauptverzeichniss.<br>
+                Die Installation ist damit abgeschlossen, hier geht es zur Hauptseite:<br>
+            </p>
+            <div class="text-center">
+                <a href="./" class="btn btn-success btn-lg">zur Hauptseite</a>
+            </div>
+        </div>
+    </div>
 </section>
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
 <script>
@@ -322,6 +376,29 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
                 me.prop('disabled', false);
             }
         });
+    });
+
+    $('#checkMQTT').on('click', function () {
+        let me = $(this);
+        me.prop('disabled', true);
+        let data = {
+            mqtt_host: $('#mqtt_host').val(),
+            mqtt_port: $('#mqtt_port').val(),
+            mqtt_user: $('#mqtt_user').val(),
+            mqtt_pass: $('#mqtt_pass').val()
+        }
+        $.post('install.php', data, function (res) {
+            me.prop('disabled', false);
+            $('#meldung').text(res);
+            me.removeClass('btn-primary btn-success btn-danger');
+            if (res.indexOf('Verbindung OK') !== -1) {
+                me.addClass('btn-success');
+                $('#copyDB').prop('disabled', false);
+            } else {
+                me.addClass('btn-danger');
+                $('#copyDB').prop('disabled', true);
+            }
+        })
     });
 </script>
 </body>

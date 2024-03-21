@@ -53,12 +53,12 @@ class Cron
 	/**
 	 * @var string
 	 */
-	private $Host = 'my.host.de';
+	private $Host;
 
 	/**
 	 * @var int
 	 */
-	private $Port = 3881;
+	private $Port;
 
 	/**
 	 * @var string
@@ -68,12 +68,12 @@ class Cron
 	/**
 	 * @var string
 	 */
-	private $User = '***';
+	private $User;
 
 	/**
 	 * @var string
 	 */
-	private $Password = '***';
+	private $Password;
 
 	/**
 	 * @var string
@@ -95,6 +95,7 @@ class Cron
 		$this->startTime = time();
 		ini_set('max_execution_time', $this->Runtime);
 
+		$this->getMQTTConfig();
 		$this->connectDB();
 		$this->MQTT = new Bluerhinos\phpMQTT($this->Host, $this->Port, $this->ClientID);
 		$this->MQTT->debug = false;
@@ -225,6 +226,27 @@ class Cron
 		$PDO = null;
 		require 'DB.php';
 		self::$PDO = $PDO;
+	}
+
+	/**
+	 * @return void
+	 */
+	private function getMQTTConfig()
+	{
+		$config_file = "MQTT_data.php";
+		$Host = null;
+		$Port = null;
+		$User = null;
+		$Password = null;
+
+		if (is_file($config_file)) {
+			include $config_file;
+		}
+
+		$this->Host = $Host;
+		$this->Port = $Port;
+		$this->User = $User;
+		$this->Password = $Password;
 	}
 }
 
