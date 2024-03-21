@@ -4,8 +4,9 @@ ob_start('ob_gzhandler');
 error_reporting(E_ALL);
 ini_set('display_errors', true);
 
-if (file_exists('DB_data.php')) {
-	echo 'Die Installation wurde schon ausgeführt! - Losche die Datei "DB_data.php" um die INstallation erneut zu starten.';
+if (array_key_exists('delete', $_GET)) {
+	unlink('install.php');
+	header('Location: ./');
 	exit;
 }
 
@@ -354,7 +355,8 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
                 Die Installation ist damit abgeschlossen, hier geht es zur Hauptseite:<br>
             </p>
             <div class="text-center">
-                <a href="./" class="btn btn-success btn-lg">zur Hauptseite</a>
+                <a href="./install.php?delete" class="btn btn-success btn-lg">install.php Löschen und zur Hauptseite
+                    gehen</a>
             </div>
         </div>
     </div>
