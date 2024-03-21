@@ -171,6 +171,9 @@ $Host = \'' . $data['mqtt_host'] . '\';
 $Port = \'' . $data['mqtt_port'] . '\';
 $User = \'' . $data['mqtt_user'] . '\';
 $Password = \'' . $data['mqtt_pass'] . '\';
+$ClientID = \'' . $data['mqtt_clientid'] . '\';
+$Topic = \'' . $data['mqtt_topic'] . '\';
+$Runtime = ' . intval($data['mqtt_runtime']) . ';
 ';
 
 			if (file_put_contents('MQTT_data.php', $config)) {
@@ -289,6 +292,19 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
                 <label for="mqtt_pass" class="input-group-text">Passwort</label>
                 <input id="mqtt_pass" type="password" class="form-control">
             </div>
+            <div class="input-group mb-3">
+                <label for="mqtt_topic" class="input-group-text">Topic</label>
+                <input id="mqtt_topic" type="text" class="form-control" placeholder="solar/#" value="solar/#">
+            </div>
+            <div class="input-group mb-3">
+                <label for="mqtt_clientid" class="input-group-text">MQTT ClientID</label>
+                <input id="mqtt_clientid" type="text" class="form-control" placeholder="SolarLogger"
+                       value="SolarLogger">
+            </div>
+            <div class="input-group mb-3">
+                <label for="mqtt_runtime" class="input-group-text">Laufzeit in Sekunden (max_execution_time)</label>
+                <input id="mqtt_runtime" type="number" min="1" class="form-control" placeholder="300" value="300">
+            </div>
             <button class="btn btn-primary btn-lg" id="checkMQTT">MQTT Verbindung testen</button>
             <pre id="mqtt_meldung" class="mt-3 text-muted"></pre>
         </div>
@@ -385,7 +401,10 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
             mqtt_host: $('#mqtt_host').val(),
             mqtt_port: $('#mqtt_port').val(),
             mqtt_user: $('#mqtt_user').val(),
-            mqtt_pass: $('#mqtt_pass').val()
+            mqtt_pass: $('#mqtt_pass').val(),
+            mqtt_topic: $('#mqtt_topic').val(),
+            mqtt_clientid: $('#mqtt_clientid').val(),
+            mqtt_runtime: $('#mqtt_runtime').val()
         }
         $.post('install.php', data, function (res) {
             me.prop('disabled', false);
@@ -393,10 +412,8 @@ $importURL = 'http' . (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] 
             me.removeClass('btn-primary btn-success btn-danger');
             if (res.indexOf('Verbindung OK') !== -1) {
                 me.addClass('btn-success');
-                $('#copyDB').prop('disabled', false);
             } else {
                 me.addClass('btn-danger');
-                $('#copyDB').prop('disabled', true);
             }
         })
     });

@@ -8,7 +8,7 @@ class Cron
 	 * @var float|int
 	 **/
 	// */5 * * * * cd /var/www/solar; && php Cron.php
-	private $Runtime = 5 * 60;//in Minuten
+	private $Runtime = 300;//in Sekunden
 
 	/**
 	 * @var array
@@ -78,7 +78,7 @@ class Cron
 	/**
 	 * @var string
 	 */
-	private $Topic = 'solar/#';
+	private $Topic = 'solar_rene/#';
 
 	/**
 	 * @var \Bluerhinos\phpMQTT
@@ -96,14 +96,19 @@ class Cron
 		ini_set('max_execution_time', $this->Runtime);
 
 		$this->getMQTTConfig();
-		$this->connectDB();
-		$this->MQTT = new Bluerhinos\phpMQTT($this->Host, $this->Port, $this->ClientID);
-		$this->MQTT->debug = false;
+		if (isset($this->Host)) {
+			$this->connectDB();
+			$this->MQTT = new Bluerhinos\phpMQTT($this->Host, $this->Port, $this->ClientID);
+			$this->MQTT->debug = false;
 
-		if (!$this->MQTT->connect(true, NULL, $this->User, $this->Password)) {
-			exit(1);
+			if (!$this->MQTT->connect(true, NULL, $this->User, $this->Password)) {
+				exit(1);
+			}
+			$this->subscribe($this->Topic);
+		} else {
+			echo 'Kein Broker definiert - Config MQTT_data.php gesetzt?';
+			exit;
 		}
-		$this->subscribe($this->Topic);
 	}
 
 	/**
@@ -238,6 +243,9 @@ class Cron
 		$Port = null;
 		$User = null;
 		$Password = null;
+		$Topic = null;
+		$ClientID = null;
+		$Runtime = null;
 
 		if (is_file($config_file)) {
 			include $config_file;
@@ -247,6 +255,9 @@ class Cron
 		$this->Port = $Port;
 		$this->User = $User;
 		$this->Password = $Password;
+		$this->Topic = $Topic;
+		$this->ClientID = $ClientID;
+		$this->Runtime = $Runtime;
 	}
 }
 

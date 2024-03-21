@@ -4,4 +4,5 @@
 /result.txt
 /node_modules
 /DB_data.php
+/MQTT_data.php
 /vendor
