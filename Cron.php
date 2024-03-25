@@ -200,7 +200,7 @@ class Cron
 				power_2=' . $Hoymiles['inverter__data']['power_2'] . ',
 				power_3=' . $Hoymiles['inverter__data']['power_3'] . ',
 				power_4=' . $Hoymiles['inverter__data']['power_4'] . ',
-				power_5=' . $Hoymiles['inverter__data']['power_5'] . ',
+				power_5=' . $Hoymiles['inverter__data']['power_5'] . '
 			');
 
 			self::$Buffer = array();
