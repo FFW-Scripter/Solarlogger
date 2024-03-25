@@ -102,6 +102,11 @@ class Cron
 		$this->getMQTTConfig();
 		if (isset($this->Host)) {
 			$this->connectDB();
+
+			if (date('H') == 0) {
+				self::optimizeTable();
+			}
+
 			$this->MQTT = new Bluerhinos\phpMQTT($this->Host, $this->Port, $this->ClientID);
 			$this->MQTT->debug = false;
 
@@ -272,6 +277,46 @@ class Cron
 		$this->Topic = $Topic;
 		$this->ClientID = $ClientID;
 		$this->Runtime = $Runtime;
+	}
+
+	public static function optimizeTable()
+	{
+		$optimizeFile = './optimize';
+		if (!file_exists($optimizeFile)) {
+			touch($optimizeFile);
+		}
+		if (time() - filemtime($optimizeFile) > 24 * 60 * 60) {
+			unlink($optimizeFile);
+			echo "\nOptimiere Tabelle";
+
+			//Wenn es mehr als eine Zeile pro Minute gibt -> Optimieren
+			$createTable = self::$PDO->query('SHOW CREATE TABLE inverter__data')->fetch();
+			$createTable_sql = str_replace($createTable['Table'], $createTable['Table'] . '_tmp', $createTable['Create Table']);
+			self::$PDO->exec($createTable_sql);
+
+			if (self::$PDO->errorCode() == 0) {
+				self::$PDO->exec('Insert into ' . $createTable['Table'] . '_tmp Select serial,
+       avg(power)                               as power,
+       max(yieldday)                            as yieldday,
+       avg(temperature)                         as temperature,
+       date_format(timestamp, \'%Y-%m-%d %H:%i\') as ts,
+       avg(power_0)                             as power_0,
+       avg(power_1)                             as power_1,
+       avg(power_2)                             as power_2,
+       avg(power_3)                             as power_3,
+       avg(power_4)                             as power_4,
+       avg(power_5)                             as power_5
+from ' . $createTable['Table'] . ' group by serial, ts');
+
+				if (self::$PDO->errorCode() == 0) {
+					self::$PDO->exec('truncate table ' . $createTable['Table']);
+					self::$PDO->exec('Insert into ' . $createTable['Table'] . ' Select * from ' . $createTable['Table'] . '_tmp');
+					self::$PDO->exec('drop table ' . $createTable['Table'] . '_tmp');
+					self::$PDO->exec('optimize table ' . $createTable['Table'] . ';flush table ' . $createTable['Table']);
+				}
+			}
+			touch($optimizeFile);
+		}
 	}
 }
 
