@@ -1,4 +1,5 @@
 <?php
+chdir(__DIR__);
 
 require_once 'phpMQTT/phpMQTT.php';
 
@@ -127,10 +128,8 @@ class Cron
 
 		$t = explode('/', $topic);
 
-		if ($t[1] == 'dtu') {
-			if ($t['2'] == 'rssi') {
-				self::InsertData(self::$Buffer);
-			}
+		if ($t[1] == 'dc' && $t['2'] == 'is_valid') {
+			self::InsertData(self::$Buffer);
 		} elseif (preg_match('/^\d+$/', $t[1])) {
 			if (!array_key_exists($t[1], self::$Buffer)) {
 				self::$Buffer[$t[1]] = array_merge(self::$model_inverter);
@@ -191,7 +190,18 @@ class Cron
 			self::$PDO->exec($sql);
 			self::$PDO->exec('INSERT INTO `inverter__data` 
     		(' . implode(', ', array_keys($Hoymiles['inverter__data'])) . ') VALUES 
-			(' . implode(', ', $Hoymiles['inverter__data']) . ')');
+			(' . implode(', ', $Hoymiles['inverter__data']) . ')
+			ON  DUPLICATE KEY UPDATE 
+				power=' . $Hoymiles['inverter__data']['power'] . ',
+				yieldday=' . $Hoymiles['inverter__data']['yieldday'] . ',
+				temperature=' . $Hoymiles['inverter__data']['temperature'] . ',
+				power_0=' . $Hoymiles['inverter__data']['power_0'] . ',
+				power_1=' . $Hoymiles['inverter__data']['power_1'] . ',
+				power_2=' . $Hoymiles['inverter__data']['power_2'] . ',
+				power_3=' . $Hoymiles['inverter__data']['power_3'] . ',
+				power_4=' . $Hoymiles['inverter__data']['power_4'] . ',
+				power_5=' . $Hoymiles['inverter__data']['power_5'] . ',
+			');
 
 			self::$Buffer = array();
 		}
