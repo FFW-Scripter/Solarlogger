@@ -133,7 +133,7 @@ class Cron
 
 		$t = explode('/', $topic);
 
-		if ($t[1] == 'dc' && $t['2'] == 'is_valid') {
+		if ($t[1] == 'dc' && $t['2'] == 'is_valid' && self::$Buffer[$t[1]]['inverter']['power'] > 0) {
 			self::InsertData(self::$Buffer);
 		} elseif (preg_match('/^\d+$/', $t[1])) {
 			if (!array_key_exists($t[1], self::$Buffer)) {
