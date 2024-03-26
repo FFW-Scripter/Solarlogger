@@ -35,9 +35,9 @@ class Cron
 		),
 		'inverter__data' => array(
 			'serial' => null,
-			'power' => null,
-			'yieldday' => null,
-			'temperature' => null,
+			'power' => 0,
+			'yieldday' => 0,
+			'temperature' => 0,
 			'power_0' => 0,
 			'power_1' => 0,
 			'power_2' => 0,
