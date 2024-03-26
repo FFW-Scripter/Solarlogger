@@ -19,12 +19,13 @@ class Cron
 	 * @var array[]
 	 */
 	private static $model_inverter = array(
+		'producing' => 0,
 		'inverter' => array(
 			'serial' => null,
 			'name' => null,
-			'power' => null,
-			'yieldday' => null,
-			'temperature' => null,
+			'power' => 0,
+			'yieldday' => 0,
+			'temperature' => 0,
 			'name_power_0' => '',
 			'name_power_1' => '',
 			'name_power_2' => '',
@@ -128,13 +129,19 @@ class Cron
 	 */
 	public static function procMsg($topic, $msg)
 	{
-		//echo "Topic: {$topic}\n";
+		//echo "Topic: {$topic} > ";
 		//echo "\t$msg\n\n";
 
 		$t = explode('/', $topic);
 
-		if ($t[1] == 'dc' && $t['2'] == 'is_valid' && self::$Buffer[$t[1]]['inverter']['power'] > 0) {
-			self::InsertData(self::$Buffer);
+		if ($t[1] == 'dtu' && $t['2'] == 'rssi') {
+			foreach (self::$Buffer as $Hoymiles) {
+				//print_r($Hoymiles);
+				if ($Hoymiles['inverter']['power'] > 0) {
+					self::InsertData($Hoymiles);
+				}
+			}
+			self::$Buffer = array();
 		} elseif (preg_match('/^\d+$/', $t[1])) {
 			if (!array_key_exists($t[1], self::$Buffer)) {
 				self::$Buffer[$t[1]] = array_merge(self::$model_inverter);
@@ -144,6 +151,8 @@ class Cron
 
 			if ($t[2] == 'name') {
 				self::$Buffer[$t[1]]['inverter']['name'] = $msg;
+			} elseif ($t[2] == 'status' && isset($t[3]) && $t[3] == 'producing') {
+				self::$Buffer[$t[1]]['producing'] = $msg;
 			} else { //MPPT
 				if (intval($t[2]) > 0) {
 					$inv = intval($t[2]) - 1;
@@ -153,6 +162,7 @@ class Cron
 							break;
 						case 'name':
 							self::$Buffer[$t[1]]['inverter']['name_power_' . $inv] = $msg;
+							break;
 					}
 				} else {
 					switch ($t[3]) {
@@ -178,13 +188,12 @@ class Cron
 	 * @param array $Buffer
 	 * @return void
 	 */
-	private static function InsertData(array $Buffer)
+	private static function InsertData(array $Hoymiles)
 	{
-		foreach ($Buffer as $Hoymiles) {
-			self::quote($Hoymiles['inverter']);
-			self::quote($Hoymiles['inverter__data']);
+		self::quote($Hoymiles['inverter']);
+		self::quote($Hoymiles['inverter__data']);
 
-			$sql = 'INSERT INTO `inverter` (' . implode(', ', array_keys($Hoymiles['inverter'])) . ') 
+		$sql = 'INSERT INTO `inverter` (' . implode(', ', array_keys($Hoymiles['inverter'])) . ') 
 			VALUES (' . implode(', ', $Hoymiles['inverter']) . ')
 			ON  DUPLICATE KEY UPDATE 
 			name=' . $Hoymiles['inverter']['name'] . ',
@@ -192,8 +201,8 @@ class Cron
 			yieldday=' . $Hoymiles['inverter']['yieldday'] . ',
 			temperature=' . $Hoymiles['inverter']['temperature'];
 
-			self::$PDO->exec($sql);
-			self::$PDO->exec('INSERT INTO `inverter__data` 
+		self::$PDO->exec($sql);
+		self::$PDO->exec('INSERT INTO `inverter__data` 
     		(' . implode(', ', array_keys($Hoymiles['inverter__data'])) . ') VALUES 
 			(' . implode(', ', $Hoymiles['inverter__data']) . ')
 			ON  DUPLICATE KEY UPDATE 
@@ -207,9 +216,6 @@ class Cron
 				power_4=' . $Hoymiles['inverter__data']['power_4'] . ',
 				power_5=' . $Hoymiles['inverter__data']['power_5'] . '
 			');
-
-			self::$Buffer = array();
-		}
 	}
 
 	/**
