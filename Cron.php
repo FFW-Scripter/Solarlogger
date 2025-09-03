@@ -142,7 +142,7 @@ class Cron
 				}
 			}
 			self::$Buffer = array();
-		} elseif (preg_match('/^\d+$/', $t[1])) {
+		} elseif (preg_match('/^\w{12}$/', $t[1])) {
 			if (!array_key_exists($t[1], self::$Buffer)) {
 				self::$Buffer[$t[1]] = array_merge(self::$model_inverter);
 				self::$Buffer[$t[1]]['inverter']['serial'] = $t[1];
